@@ -163,7 +163,7 @@ def buscarCategorias(db: Session = Depends(getDataBase)):
         raise HTTPException(status_code = 400, detail = f'Eror al Registrar el Usuario {error}')
 
 #Metodo Pago -----------------------------------------------------------------------------------------------------
-@rutas.post("/Metodospago")
+@rutas.post("/Metodospago", response_model = MetodoPagoDTORespuesta)
 def guardarUsuario(datosPeticion: MetodoPagoDTOPeticion, db:Session = Depends(getDataBase)):
 
     try:
@@ -175,7 +175,11 @@ def guardarUsuario(datosPeticion: MetodoPagoDTOPeticion, db:Session = Depends(ge
         db.add(metodoPago)
         db.commit()
         db.refresh(metodoPago)
-        return metodoPago
+        return MetodoPagoDTORespuesta(
+            id=MetodoPago.id,
+            nombreMetodo=MetodoPago.nombreMetodo,
+            descripcion=MetodoPago.descripcion
+        )
     except Exception as error:
         db.rollback()
         raise HTTPException(status_code = 400, detail = f'Eror al Registrar el Usuario {error}')
@@ -185,7 +189,13 @@ def buscarMetodosPago(db: Session = Depends(getDataBase)):
 
     try:
         listadoDeMetodosPago = db.query(MetodoPago).all()
-        return listadoDeMetodosPago
+        return [
+            MetodoPagoDTORespuesta(
+                id=MetodoPago.id,
+                nombreMetodo=MetodoPago.nombreMetodo,
+                descripcion=MetodoPago.descripcion
+            ) for MetodoPago in listadoDeMetodosPago
+        ]
 
     except Exception as error:
         db.rollback()
